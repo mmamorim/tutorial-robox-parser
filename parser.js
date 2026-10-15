@@ -15,6 +15,7 @@ export function analisarSintatico(tokens) {
         }
         i = i + 1;
         // era o certo: consome e avança
+        return token;
     }
     function comecaComando() {
         const token = tokens[i];
@@ -30,10 +31,12 @@ export function analisarSintatico(tokens) {
         return false;
     }
     function lista() {
-        comando();
+        const comandos = [];
+        comandos.push(comando());
         while (comecaComando()) {
-            comando();
+            comandos.push(comando());
         }
+        return comandos;
     }
     // lista → comando lista | comando
     // sempre há pelo menos um comando
@@ -47,29 +50,35 @@ export function analisarSintatico(tokens) {
         if (token.tipo === "AVANCAR") {
             // comando → AVANCAR NUM
             esperar("AVANCAR");
-            esperar("NUM");
+            const numero = esperar("NUM");
+            return { tipo: "avancar", passos: Number(numero.lexema) };
         } else if (token.tipo === "GIRAR") {
             // comando → GIRAR NUM
             esperar("GIRAR");
-            esperar("NUM");
+            const numero = esperar("NUM");
+            return { tipo: "girar", passos: Number(numero.lexema) };
         } else if (token.tipo === "PINTAR") {
             // comando → PINTAR COR
             esperar("PINTAR");
-            esperar("COR");
+            const cor = esperar("COR");
+            return { tipo: "pintar", cor: cor.lexema };
         } else if (token.tipo === "REPETIR") {
             // comando → REPETIR NUM ABRE lista FECHA
             esperar("REPETIR");
-            esperar("NUM");
+            const numero = esperar("NUM");
             esperar("ABRE");
-            lista();
+            const corpo = lista();
             // variável: chama a função dela
             esperar("FECHA");
+            return { tipo: "repetir", vezes: Number(numero.lexema), corpo: corpo };
         } else {
             throw new Error("Erro sintático na linha " + token.linha +
                 ": esperado um comando, encontrado " + token.tipo);
         }
     }
-    lista();
+
+    const comandos = lista();
+    
     // programa → lista
     if (i < tokens.length) {
         // sobrou algum token?
@@ -77,4 +86,6 @@ export function analisarSintatico(tokens) {
         throw new Error("Erro sintático na linha " + token.linha +
             ": esperado o fim do programa, encontrado " + token.tipo);
     }
+
+    return { tipo: "programa", comandos: comandos };
 }

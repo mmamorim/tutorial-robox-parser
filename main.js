@@ -27,8 +27,9 @@ function analisar() {
         }
     } else {
         try {
-            analisarSintatico(tokens);
+            const ast = analisarSintatico(tokens);
             linhas.push("Análise sintática: programa válido");
+            linhas.push(JSON.stringify(ast, null, 2));
         } catch (falha) {
             linhas.push(falha.message);
         }
