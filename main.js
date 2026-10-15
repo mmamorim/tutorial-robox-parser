@@ -1,5 +1,6 @@
 import { analisarLexico } from "./lexer.js";
 import { analisarSintatico } from "./parser.js";
+import { paraMermaid } from "./geradorMermaid.js";
 
 const exemplo = `repetir 3 [
     avançar 10
@@ -30,6 +31,7 @@ function analisar() {
             const ast = analisarSintatico(tokens);
             linhas.push("Análise sintática: programa válido");
             linhas.push(JSON.stringify(ast, null, 2));
+            paraMermaid(ast,linhas)
         } catch (falha) {
             linhas.push(falha.message);
         }
