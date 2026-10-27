@@ -7,9 +7,10 @@ export const regras = [
     },
     { tipo: "PINTAR", padrao: /pintar/y },
     { tipo: "REPETIR", padrao: /repetir/y },
+    { tipo: "ENQUANTO", padrao: /enquanto/y },
     {
         tipo: "COR",
-        padrao: /vermelho|azul|verde/y
+        padrao: /vermelho|azul|verde|amarelo/y
     },
     {
         tipo: "NUM",
