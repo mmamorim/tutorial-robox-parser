@@ -10,10 +10,11 @@ export function analisarSintatico(tokens) {
 
         if (token.tipo !== tipo) {                           // não é o tipo que a gramática pede
             throw new Error("Erro sintático na linha " + token.linha +
-                            ": esperado " + tipo + ", encontrado " + token.tipo);
+                ": esperado " + tipo + ", encontrado " + token.tipo);
         }
 
         i = i + 1;                                           // era o certo: consome e avança
+        return token;
     }
 
     function comecaComando() {
@@ -31,11 +32,18 @@ export function analisarSintatico(tokens) {
         return false;
     }
 
-    function lista() {                                       // lista → comando lista | comando
-        comando();                                           // sempre há pelo menos um comando
+    function lista() {
+        const comandos = [];                           // lista → comando lista | comando
+        let no = comando();
+        //console.log(JSON.stringify(no));                                  // sempre há pelo menos um comando
+        comandos.push(no)
         while (comecaComando()) {                            // enquanto vier outro comando...
-            comando();                                       // ...analisa-o também
+            no = comando();                                       // ...analisa-o também
+            //console.log(JSON.stringify(no));
+            comandos.push(no)
         }
+        //console.log(comandos);        
+        return comandos;
     }
 
     function comando() {
@@ -47,30 +55,37 @@ export function analisarSintatico(tokens) {
 
         if (token.tipo === "AVANCAR") {                      // comando → AVANCAR NUM
             esperar("AVANCAR");
-            esperar("NUM");
+            const numero = esperar("NUM");
+            if(Number(numero.lexema) == 1 ) { console.log("ERRO SEMANTICO: AVANÇAR NEGATIVO") }
+            return { tipo: "avancar", passos: Number(numero.lexema) };
         } else if (token.tipo === "GIRAR") {                 // comando → GIRAR NUM
             esperar("GIRAR");
-            esperar("NUM");
+            const numero = esperar("NUM");
+            return { tipo: "girar", graus: Number(numero.lexema) }
         } else if (token.tipo === "PINTAR") {                // comando → PINTAR COR
             esperar("PINTAR");
-            esperar("COR");
+            const cor = esperar("COR");
+            return { tipo: "pintar", cor: cor.lexema }
         } else if (token.tipo === "REPETIR") {               // comando → REPETIR NUM ABRE lista FECHA
             esperar("REPETIR");
-            esperar("NUM");
+            const numero = esperar("NUM");           
             esperar("ABRE");
-            lista();                                         // variável: chama a função dela
+            const vetor = lista();                                        // variável: chama a função dela
             esperar("FECHA");
+            return { tipo: "repetir", vezes: Number(numero.lexema), corpo: vetor }
         } else {
             throw new Error("Erro sintático na linha " + token.linha +
-                            ": esperado um comando, encontrado " + token.tipo);
+                ": esperado um comando, encontrado " + token.tipo);
         }
     }
 
-    lista();                                                 // programa → lista
+    const comandos = lista();
 
     if (i < tokens.length) {                                 // sobrou algum token?
         const token = tokens[i];
         throw new Error("Erro sintático na linha " + token.linha +
-                        ": esperado o fim do programa, encontrado " + token.tipo);
+            ": esperado o fim do programa, encontrado " + token.tipo);
     }
+
+    return { tipo: "programa", comandos: comandos }
 }

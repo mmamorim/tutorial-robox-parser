@@ -3,7 +3,8 @@ import { analisarSintatico } from "./parser.js";
 
 const exemplo = `repetir 3 [
     avancar 10
-    repetir 2 [
+    # AQUI TEM UM COMENTARIO
+    repetir 2 [ 
         girar 90
     ]
     pintar verde
@@ -14,6 +15,8 @@ document.getElementById("entrada").value = exemplo;
 function analisar() {
     const texto = document.getElementById("entrada").value;
     const resultado = analisarLexico(texto);
+    console.log(resultado);
+    
     const tokens = resultado.tokens;
     const erros = resultado.erros;
 
@@ -34,8 +37,10 @@ function analisar() {
         }
     } else {
         try {
-            analisarSintatico(tokens);
+            const ast = analisarSintatico(tokens);
             linhas.push("Análise sintática: programa válido");
+            linhas.push(JSON.stringify(ast, null, 2));
+            console.log("AST",ast)
         } catch (falha) {
             linhas.push(falha.message);
         }
